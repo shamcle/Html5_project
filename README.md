@@ -23,3 +23,5 @@ context.arc(x,y,r,sAngle,eAngle,counterclockwise);
 >eAngle：结束角，以弧度计。
 >counterclockwise：可选。规定应该逆时针还是顺时针绘图。False = 顺时针，true = 逆时针。
 
+
+### 参考改造纯JS版本
