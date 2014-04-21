@@ -79,7 +79,7 @@
                     lineWidth : 4, //墙的宽度
                     wallColor : ['#009900', '#0033ff', '#cc0011', '#ffff00', '#00cc99', '#1133cc'], //墙的颜色
                     wcIndex : 0, //墙壁颜色数组下标
-                    time : 1.6 * 10 * 1000//游戏时间
+                    time : 9.1 * 10 * 1000//游戏时间
                 };
 
             self.opts = opts || defaults;
@@ -140,8 +140,8 @@
             self.result.style.fontSize = '150px'; 
             self.result.style.width = '570px'; 
             self.result.style.position = 'absolute'; 
-            self.result.style.left = '347.5px'; 
-            self.result.style.top = '114px'; 
+            self.result.style.left = '30%'; 
+            self.result.style.top = '20%'; 
             self.result.style.display = 'none';
 
             self.body.appendChild(self.result);
@@ -254,15 +254,15 @@
             self._pacmanTimer = new Timer(200, function() {
                 self._c.pacman.mouth = self._c.pacman.mouth == 'big' ? 'small' : 'big';
             });
-            self._moveTimer = new Timer(100, function() {
+            self._moveTimer = new Timer(150, function() {
                 impact = self.impactTest(self._c.pacman.i, self._c.pacman.j, self._c.to);
                 if(impact) {
                     self._c.pacman.direction = impact.direction;
                 }
                 self.moveItem(self._c.pacman.i, self._c.pacman.j, self._c.pacman.direction);
             });
-            self._moveMonstersTimer = new Timer(150, function() {
-                //self.moveMonsters();
+            self._moveMonstersTimer = new Timer(200, function() {
+                self.moveMonsters();
             });
             self.intervalID = setInterval(function() {
                 self._stageTimer.action();
@@ -316,6 +316,51 @@
                         break;
                 }
             };
+        },
+
+        //怪物移动轨迹计算
+        getMonsterNextDirection : function(i, j, direction) {
+            var impact, d = ['left', 'right', 'up', 'down'], canGo = [];
+            if(direction == 'left') {
+                d = ['left', 'up', 'down'];
+            } else if(direction == 'right') {
+                d = ['right', 'up', 'down'];
+            } else if(direction == 'up') {
+                d = ['left', 'up', 'right'];
+            } else if(direction == 'down') {
+                d = ['left', 'down', 'right'];
+            }
+            //循环查找可以行走的路径，将能去的方向记录下来
+
+            for(var _i = 0; _i < d.length; _i += 1) {
+                impact = this.impactTest(i, j, d[_i]);
+                if(impact)
+                    canGo.push(d[_i]);
+            }
+            var rand = getRandomNum(0, canGo.length - 1);
+
+            return canGo[rand] || direction;
+        },
+
+        //移动的怪物
+        moveMonsters : function(i, j, direction) {
+            var impact, k, d;
+            for(var i = 0, len = this._c.monsters.length; i < len; i += 1) {
+                k = this._c.monsters[i];
+                d = this.getMonsterNextDirection(k.i, k.j, k.direction);
+                impact = this.impactTest(k.i, k.j, d);
+
+                if(impact) {
+                    this.moveItem(k.i, k.j, impact.direction);
+                    this._c.monsters[i] = {
+                        'i' : impact.i,
+                        'j' : impact.j,
+                        'direction' : impact.direction
+                    };
+                } else {
+                    this._c.monsters[i].direction = this.getMonsterNextDirection(k.i, k.j, 'stop');
+                }
+            }
         },
 
         //移动
